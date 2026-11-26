@@ -1,3 +1,6 @@
 asset,source,license_status,notes
 public/brand/mark.svg,original kit,original,editable vector
 public/brand/wordmark.svg,original kit,original,editable vector
+DM Sans Variable,Fontsource package / Google Fonts,SIL Open Font License 1.1,locally served from npm
+Fraunces Variable,Fontsource package / Google Fonts,SIL Open Font License 1.1,locally served from npm
+Lucide icons,Lucide project,ISC,locally bundled React icons

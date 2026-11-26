@@ -1,0 +1,15 @@
+.env
+.env.*
+**/*.env
+.local/
+.vercel/
+.git/
+node_modules/
+.next/
+artifacts/
+test-results/
+playwright-report/
+*.pem
+*.key
+*.credential.xml
+uploads/

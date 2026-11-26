@@ -16,7 +16,11 @@ test-results/
 uploads/
 .local/
 .vercel/
+*.tsbuildinfo
+next-env.d.ts
 *.log
 artifacts/private/
 .DS_Store
 Thumbs.db
+
+.vercel

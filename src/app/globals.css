@@ -1,0 +1,35 @@
+@import "./marketing.css";
+@import "./workspace.css";
+
+:root {
+  --ivory: #f8f4ed; --espresso: #241d19; --copper: #c45124; --deep: #a33e1b;
+  --sand: #e9d5bd; --white: #fff; --muted: #72645a; --border: #e2d6c8;
+  --paper: #fffcf8; --serif: "Fraunces Variable", Georgia, serif;
+  --sans: "DM Sans Variable", system-ui, sans-serif;
+  color: var(--espresso); background: var(--ivory); font-family: var(--sans);
+  font-optical-sizing: auto; font-size: 16px; -webkit-font-smoothing: antialiased;
+}
+* { box-sizing: border-box; }
+body { margin: 0; }
+a { color: inherit; text-decoration: none; }
+button, input, textarea, select { font: inherit; color: inherit; }
+button { cursor: pointer; }
+button:disabled { cursor: wait; opacity: .58; }
+img, svg { vertical-align: middle; }
+:focus-visible { outline: 2px solid var(--deep); outline-offset: 4px; }
+::selection { background: #f3ceb2; color: var(--espresso); }
+.skip-link { position: fixed; top: 8px; left: 8px; z-index: 99; transform: translateY(-150%); background: white; padding: 10px 16px; }
+.skip-link:focus { transform: none; }
+.sr-only { position: absolute; width: 1px; height: 1px; padding: 0; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+.btn { min-height: 42px; border: 1px solid var(--border); border-radius: 7px; background: var(--paper); padding: 9px 15px; display: inline-flex; gap: 9px; align-items: center; justify-content: center; text-align: center; font-weight: 660; }
+.btn:hover { background: #f0e5d7; }
+.btn.primary { background: var(--deep); color: white; border-color: var(--deep); }
+.btn.primary:hover { background: #853016; }
+.btn.quiet { background: transparent; border-color: transparent; }
+.btn.quiet:hover { background: #f0e5d7; }
+.btn.danger { color: #8b2e20; }
+.status-error { color: #8b2e20; background: #faebe5; padding: 11px 14px; border-radius: 7px; }
+.muted { color: var(--muted); }
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: .001ms !important; transition-duration: .001ms !important; scroll-behavior: auto !important; }
+}

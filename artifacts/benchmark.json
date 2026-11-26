@@ -1,0 +1,7 @@
+{
+  "date": "2026-11-26",
+  "environment": "Windows, Next.js production build, loopback HTTP, PostgreSQL 17",
+  "dataset": {"syntheticDocuments": 52, "indexedPassages": 5200, "matchesPerQuery": 8},
+  "requests": {"warmups": 5, "measured": 50, "type": "sequential authenticated keyword requests"},
+  "latencyMs": {"p50": 10.26, "p95": 12.43}
+}
