@@ -116,7 +116,7 @@ export async function workspaceStats(workspace:string) {
   return transaction(async db => {
     const result = await db.query(`SELECT (SELECT count(*)::int FROM documents WHERE workspace_id=$1) AS documents,
       (SELECT coalesce(sum(size),0)::int FROM documents WHERE workspace_id=$1) AS bytes,
-      (SELECT coalesce(max(count),0)::int FROM usage_buckets WHERE scope_key=$1 AND kind='ai' AND period_start=date_trunc('day',now(),'UTC')) AS ai_today`,[workspace]);
+      (SELECT coalesce(max(count),0)::int FROM usage_buckets WHERE scope_key=$1::uuid::text AND kind='ai' AND period_start=date_trunc('day',now(),'UTC')) AS ai_today`,[workspace]);
     return result.rows[0];
   },workspace);
 }

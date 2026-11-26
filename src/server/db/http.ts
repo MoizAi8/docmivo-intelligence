@@ -18,6 +18,10 @@ export async function route(run: () => Promise<Response>) {
     const pg = error as { code?: string };
     if (pg?.code === "23505") failure = new HttpError(409,"CONFLICT","This item already exists.");
     if (pg?.code === "23503") failure = notFound();
+    if (failure.status===503 && !(error instanceof HttpError)) {
+      const sqlState=typeof pg?.code==="string" && /^[0-9A-Z]{5}$/.test(pg.code) ? pg.code : undefined;
+      console.warn("docmivo.request.unavailable", { sqlState });
+    }
     return Response.json({ error: { code: failure.code, message: failure.message }, requestId: randomUUID() }, { status: failure.status, headers });
   }
 }

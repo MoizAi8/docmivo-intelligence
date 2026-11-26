@@ -5,7 +5,7 @@ import { beforeAll,afterAll,describe,expect,it } from "vitest";
 import { database,transaction } from "@/server/db/pool";
 import { prepareWorkspace } from "@/server/db/http";
 import { getDocument,removeDocument,updateDocument,upload } from "@/server/documents/service";
-import { bookmark,catalog,getChunks,download,records,deleteAccount } from "@/server/documents/workspace";
+import { bookmark,catalog,getChunks,download,records,deleteAccount,workspaceStats } from "@/server/documents/workspace";
 import { reserve } from "@/server/quotas/usage";
 import { search,searchQuery } from "@/server/search/service";
 
@@ -52,6 +52,10 @@ describe("PostgreSQL schema and isolation",()=>{
     expect((await anyDoc(a,primary)).rowCount).toBe(1);
     expect((await anyDoc(b,primary)).rowCount).toBe(0);
     expect((await database().query("SELECT id FROM documents WHERE id=$1",[primary])).rowCount).toBe(0);
+  });
+  it("reports document storage and usage for each workspace",async()=>{
+    expect(await workspaceStats(a)).toMatchObject({documents:1,ai_today:0});
+    expect(await workspaceStats(b)).toMatchObject({documents:0,bytes:0,ai_today:0});
   });
   it("verifies policies, physical text indexes and both applied checksums",async()=>{
     const admin=new pg.Client({connectionString:testUrl});

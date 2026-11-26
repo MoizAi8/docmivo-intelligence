@@ -126,6 +126,8 @@ test("keyboard upload, exact source, bookmark, notes, and refresh from desktop a
   await expect(page.getByRole("navigation",{name:"Workspace navigation"})).toBeVisible();
   await page.getByRole("button",{name:"Settings",exact:true}).click();
   await expect(page.getByRole("heading",{name:"Privacy & usage"})).toBeVisible();
+  await expect(page.getByText(/1 KB \/ 20.0 MiB/)).toBeVisible();
+  expect((await page.request.get("/api/usage")).status()).toBe(200);
   await screenshot(page,"settings-390");
   expect((await removeAccount(page.request)).status()).toBe(200);
   await page.reload();
