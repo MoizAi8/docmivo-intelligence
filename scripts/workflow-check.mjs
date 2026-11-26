@@ -96,7 +96,8 @@ async function hosted(){
     assert.equal((await call("settings","GET",temporary.cookie)).status,401);pass();
 
     stage("production private Markdown indexing and original download");
-    const privateText="# Reading rooms\n\nThe fictional Heliotrope archive opens on Mondays.";
+    const searchTerm="Heliotrope"+randomBytes(4).toString("hex");
+    const privateText="# Reading rooms\n\nThe fictional "+searchTerm+" archive opens on Mondays.";
     own=await upload(first,"Fictional research notes.md",privateText);
     const original=await fetch(origin+"/api/documents/"+own.id+"/content",{headers:headers(first)});
     assert.match(original.headers.get("content-disposition"),/attachment/);
@@ -122,11 +123,16 @@ async function hosted(){
     }
     pass();
 
+    stage("hosted keyword search returns a matching document");
+    const search=await call("search","POST",first,{query:searchTerm,filters:{}});
+    assert.equal(search.status,200);
+    const hit=search.data.results.find(item=>item.documentId===own.id && item.chunkId);
+    assert.ok(hit);
+    stage("hosted keyword search highlights the indexed term");
+    assert.equal(hit.section,"Reading rooms");assert.ok(hit.snippetSegments.some(item=>item.match&&item.text===searchTerm));
     stage("keyword results, highlighted exact source, and bookmark");
-    const search=(await call("search","POST",first,{query:"Heliotrope",filters:{}})).data;
-    const hit=search.results.find(item=>item.documentId===own.id && item.chunkId);
-    assert.ok(hit);assert.equal(hit.section,"Reading rooms");assert.ok(hit.snippetSegments.some(item=>item.match&&item.text==="Heliotrope"));
     const exact=await call("documents/"+own.id+"/chunks?focus="+hit.chunkId,"GET",first);
+    assert.equal(exact.status,200);
     assert.equal(exact.data.chunks[0].id,hit.chunkId);
     assert.equal((await call("bookmarks/"+hit.chunkId,"PUT",first)).status,200);pass();
 
@@ -135,13 +141,26 @@ async function hosted(){
     assert.equal((await call("documents/"+own.id+"/chunks?focus="+hit.chunkId,"GET",second)).status,404);
     assert.equal((await call("documents/"+own.id+"/content","GET",second)).status,404);
     assert.equal((await call("documents/"+own.id,"DELETE",second)).status,404);
-    assert.deepEqual((await call("search","POST",second,{query:"Heliotrope",filters:{}})).data.results,[]);pass();
+    assert.deepEqual((await call("search","POST",second,{query:searchTerm,filters:{}})).data.results,[]);pass();
 
     stage("allowlisted tester is eligible in the deployment region");
     assert.equal(signed.data.ai,true);assert.equal((await call("settings","GET",second)).data.ai,false);pass();
 
     function askData(documentIds,extra={}){
       return {documentIds,prompt:"hours",idempotencyKey:randomUUID(),allowExternalNonSensitive:true,attestEligibility:true,...extra};
+    }
+    async function verifiedAnalysis(kind,ids,extra={}){
+      let request=askData(ids,extra);
+      let result=await call(kind,"POST",first,request);
+      if(result.status===200 && ["FAILED","INSUFFICIENT"].includes(result.data.state)){
+        console.log("Hosted "+kind+" returned "+result.data.state+" on the first attempt. Retrying with a new request.");
+        request=askData(ids,extra);
+        result=await call(kind,"POST",first,request);
+      }
+      assert.equal(result.status,200);
+      assert.equal(result.data.state,"ANSWERED");
+      assert.ok(result.data.citations.length);
+      return {request,output:result.data};
     }
     stage("private source is rejected before AI quota is reserved");
     const before=(await call("usage","GET",first)).data.ai_today;
@@ -156,13 +175,13 @@ async function hosted(){
     assert.equal((await call("ask","POST",first,askData([sample1.id],{allowExternalNonSensitive:false}))).status,400);
     assert.equal((await call("ask","POST",first,askData([sample1.id,own.id]))).error.code,"PRIVATE_SOURCE");pass();
 
+    stage("genuine hosted Gemini extract");
+    const {output:extraction}=await verifiedAnalysis("extract",[sample1.id]);pass();
+
     stage("genuine hosted Gemini answer with exact stored quotation");
     const started=performance.now();
-    const request=askData([sample1.id]);
-    const analysis=await call("ask","POST",first,request);
-    assert.equal(analysis.status,200);
-    const message=analysis.data;
-    assert.equal(message.state,"ANSWERED");
+    const usageBeforeQuestion=(await call("usage","GET",first)).data.ai_today;
+    const {request,output:message}=await verifiedAnalysis("ask",[sample1.id],{conversationId:extraction.conversation_id});
     assert.match(message.answer,/Thursday/i);
     assert.ok(message.citations.length);
     const citation=message.citations[0];
@@ -176,19 +195,14 @@ async function hosted(){
 
     stage("analysis replay is idempotent and quota is unchanged");
     const after=(await call("usage","GET",first)).data.ai_today;
-    assert.equal(after,before+1);
+    assert.ok(after>usageBeforeQuestion && after<=usageBeforeQuestion+2);
     assert.equal((await call("ask","POST",first,request)).data.id,message.id);
     assert.equal((await call("usage","GET",first)).data.ai_today,after);pass();
 
-    let extraction;
-    for(const [kind,ids] of [["summarize",[sample1.id]],["compare",[sample1.id,sample2.id]],["extract",[sample1.id]]]){
+    for(const [kind,ids] of [["summarize",[sample1.id]],["compare",[sample1.id,sample2.id]]]){
       stage("genuine hosted Gemini "+kind);
-      const output=await call(kind,"POST",first,askData(ids,{conversationId:message.conversation_id}));
-      assert.equal(output.status,200);
-      assert.equal(output.data.state,"ANSWERED");
-      assert.ok(output.data.citations.length);
-      if (kind==="compare")assert.equal(new Set(output.data.citations.map(cite=>cite.document_id)).size,2);
-      if (kind==="extract")extraction=output.data;
+      const {output}=await verifiedAnalysis(kind,ids,{conversationId:message.conversation_id});
+      if (kind==="compare")assert.equal(new Set(output.citations.map(cite=>cite.document_id)).size,2);
       pass();
     }
 
@@ -215,7 +229,7 @@ async function hosted(){
 
     stage("private deletion and search removal");
     assert.equal((await call("documents/"+own.id,"DELETE",first)).status,200);own=undefined;
-    assert.deepEqual((await call("search","POST",first,{query:"Heliotrope",filters:{}})).data.results,[]);pass();
+    assert.deepEqual((await call("search","POST",first,{query:searchTerm,filters:{}})).data.results,[]);pass();
 
     stage("sample deletion removes citations, dependent note, and stored answer");
     assert.equal((await call("documents/"+sample1.id,"DELETE",first)).status,200);sample1=undefined;

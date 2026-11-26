@@ -306,6 +306,13 @@ describe("AI workflow with PostgreSQL and a mocked Gemini SDK",()=>{
     expect(await answer(enrolled,request,"compare",input(guide,otherGuide))).toMatchObject({state:"INSUFFICIENT",citations:[]});
   });
 
+  it("keeps a valid cited answer when a provider includes unsolicited findings",async()=>{
+    const result=await answer(enrolled,request,"ask",input(guide));
+    expect(result).toMatchObject({state:"ANSWERED",findings:[]});
+    expect(result.citations).toHaveLength(1);
+    expect(provider.mock.calls[0][0].config.responseJsonSchema.properties).not.toHaveProperty("findings");
+  });
+
   it.each([["timeout",new DOMException("Timed out","TimeoutError")],["provider quota",Object.assign(new Error("Provider limited"),{status:429})]] as const)(
     "records a clean failure, releases capacity, and replays without another call after %s",async(_label,error)=>{
       vi.spyOn(console,"warn").mockImplementation(()=>{});
