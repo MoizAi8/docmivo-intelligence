@@ -1,8 +1,8 @@
 # Milestones
-- [ ] M0 inspect specs, verify package/provider/hosting compatibility, scaffold safely in place, checkpoint.
-- [ ] M1 auth, tenant schema, PostgreSQL migrations, private storage adapter, secure upload and parser bounds; actual DB tests.
-- [ ] M2 ingestion jobs, chunks, indexed FTS/trigram, search UI, snippets and exact source navigation. Benchmark and isolation tests.
-- [ ] M3 genuine eligible-document AI with policy, citations, structured summaries, saved conversations and quotas. Verify synthetic live calls and private no-call tests.
-- [ ] M4 landing and full workspace visual design; upload/library/reader/search/notes/settings, mobile, accessibility. No generic UI.
-- [ ] M5 relevant optional compare/extraction/export/semantic search only if safe and time permits. Do not delay core.
-- [ ] M6 full release QA, production rehearsal, evidence, security scan, GitHub and Vercel. Host verification. Report missing features. Keep PROGRESS current.
+- [x] M0 specifications, package and hosting compatibility, scaffold, and Git checkpoint.
+- [x] M1 authentication, tenant schema, PostgreSQL migrations, private storage, secure upload, and bounded parsing verified against PostgreSQL.
+- [x] M2 ingestion jobs, chunks, indexed full-text and trigram search, snippets, exact navigation, benchmark, and tenant isolation.
+- [x] M3 eligible-document Gemini, source citations, summaries, conversation persistence, and quotas. Verified live synthetic calls and private-source refusal.
+- [x] M4 animated landing page, responsive workspace, document reader, notes, settings, keyboard navigation, and accessibility checks.
+- [x] M5 comparison, structured extraction, and Markdown note export. Deferred semantic retrieval and OCR.
+- [x] M6 security audit, production-build regression, GitHub publication, Vercel deployment, and hosted acceptance with recorded evidence.

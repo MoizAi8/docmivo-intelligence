@@ -2,6 +2,16 @@
 
 Docmivo is an invite-only document workspace for uploading, organizing, and searching PDFs, Word documents, text, and Markdown. Search opens the matching extracted passage at its page or heading. Users can bookmark passages, save queries, organize files, and keep notes across sessions.
 
+Explore the animated landing page, product and security pages, or sign in with a workspace invite. [Live Docmivo](https://docmivo-intelligence.vercel.app)
+
+## Features
+
+- Responsive copper, ivory, and espresso interface with reduced-motion support, keyboard search, an upload status view, and highlighted passages in the document reader.
+- Private document library with original downloads, folders, tags, favorites, recent documents, bookmarks, notes with Markdown export, saved searches, and document and account deletion.
+- PostgreSQL keyword search across indexed passages, titles, tags, and notes with typo-tolerant title matching, filters, snippets, and exact source navigation. Search remains available when Gemini is unavailable.
+- Source-grounded Gemini Q&A, summaries, comparison, and structured extraction for eligible fictional guides, with stored citations, conversation history, answer-to-note, and verifiable extraction values.
+- Invite-only Better Auth sessions, independent tenant workspaces, storage and usage settings, quota enforcement, and aggregate health for allowlisted administrators.
+
 ## Architecture
 
 Browser requests go through the Next.js Node server and Better Auth. PostgreSQL stores bounded private originals, durable ingestion state, extracted passages, and workspace records. The runtime role is separate from the migration role. Workspace access uses explicit tenant filters, composite foreign keys, and forced row-level security. A read-only search function uses a fixed search path and tenant predicates to let PostgreSQL use GIN indexes for full-text and trigram candidates. Private search runs independently of Gemini.
