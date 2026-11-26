@@ -3,5 +3,5 @@
   "environment": "Windows, Next.js production build, loopback HTTP, PostgreSQL 17",
   "dataset": {"syntheticDocuments": 52, "indexedPassages": 5200, "matchesPerQuery": 8},
   "requests": {"warmups": 5, "measured": 50, "type": "sequential authenticated keyword requests"},
-  "latencyMs": {"p50": 9.45, "p95": 11.08}
+  "latencyMs": {"p50": 9.91, "p95": 11.78}
 }

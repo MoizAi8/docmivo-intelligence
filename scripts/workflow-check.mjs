@@ -102,6 +102,15 @@ async function hosted(){
     assert.match(original.headers.get("content-disposition"),/attachment/);
     assert.equal(await original.text(),privateText);pass();
 
+    stage("hosted settings reflect persisted storage and usage");
+    const usage=await call("usage","GET",first);
+    const currentSettings=await call("settings","GET",first);
+    assert.equal(usage.status,200);assert.equal(currentSettings.status,200);
+    assert.equal(currentSettings.data.documents,signed.data.documents+1);
+    assert.equal(currentSettings.data.bytes,signed.data.bytes+Buffer.byteLength(privateText));
+    for(const key of ["documents","bytes","ai_today"])assert.equal(currentSettings.data[key],usage.data[key]);
+    pass();
+
     stage("production PDF page and Word text extraction");
     for (const [name,bytes,needle] of [["Fictional PDF.pdf",fixturePdf(),"Juniper archive"],["Fictional Word.docx",fixtureDocx(),"Alder reading room"]]) {
       const file=await upload(first,name,bytes);
@@ -171,6 +180,7 @@ async function hosted(){
     assert.equal((await call("ask","POST",first,request)).data.id,message.id);
     assert.equal((await call("usage","GET",first)).data.ai_today,after);pass();
 
+    let extraction;
     for(const [kind,ids] of [["summarize",[sample1.id]],["compare",[sample1.id,sample2.id]],["extract",[sample1.id]]]){
       stage("genuine hosted Gemini "+kind);
       const output=await call(kind,"POST",first,askData(ids,{conversationId:message.conversation_id}));
@@ -178,16 +188,30 @@ async function hosted(){
       assert.equal(output.data.state,"ANSWERED");
       assert.ok(output.data.citations.length);
       if (kind==="compare")assert.equal(new Set(output.data.citations.map(cite=>cite.document_id)).size,2);
-      if (kind==="extract")assert.ok(output.data.findings.length>0);
+      if (kind==="extract")extraction=output.data;
       pass();
     }
+
+    stage("extracted values and citations match the fictional source exactly");
+    assert.ok(extraction.findings.length>0&&extraction.findings.length<=4);
+    for(const finding of extraction.findings){
+      const source=extraction.citations.find(item=>item.chunk_id===finding.chunkId);
+      assert.equal(source.document_id,sample1.id);
+      const reader=await call("documents/"+source.document_id+"/chunks?focus="+source.chunk_id,"GET",first);
+      const text=reader.data.chunks.find(item=>item.id===source.chunk_id).text.replace(/\s+/g," ");
+      assert.ok(text.includes(finding.quote.replace(/\s+/g," ").trim()));
+      assert.ok(finding.quote.includes(finding.value));
+    }
+    pass();
 
     stage("saved answer, fresh session, and conversation persistence");
     const note=await call("notes","POST",first,{title:"Fictional answer note",text:message.answer,sourceMessageId:message.id});
     assert.equal(note.status,201);
     ({cookie:first}=await auth({email:a.email,password:a.password}));
     assert.equal((await call("notes/"+note.data.id,"GET",first)).data.source_message_id,message.id);
-    assert.ok((await call("conversations/"+message.conversation_id,"GET",first)).data.messages.some(item=>item.id===message.id));pass();
+    const saved=(await call("conversations/"+message.conversation_id,"GET",first)).data.messages;
+    assert.ok(saved.some(item=>item.id===message.id));
+    assert.deepEqual(saved.find(item=>item.id===extraction.id).findings,extraction.findings);pass();
 
     stage("private deletion and search removal");
     assert.equal((await call("documents/"+own.id,"DELETE",first)).status,200);own=undefined;

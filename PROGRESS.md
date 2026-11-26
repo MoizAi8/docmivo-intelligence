@@ -1,5 +1,5 @@
 # Handoff
-Status: PRE-DEVELOPMENT ONLY. Brand Docmivo; final palette warm ivory/copper/espresso. No code or tests executed, no accounts provisioned. Next: read master, verify stack/provider/hosting, scaffold and implement M1. Each milestone record date, branch/SHA, changed modules, exact test commands and outcomes, evidence path, unresolved blockers, next action. Never write secrets here.
+Docmivo is implemented and deployed on the existing Vercel and Neon projects. The milestone entries below record verified results and the current release gate. Credentials and verification accounts stay in ignored local configuration and encrypted deployment settings.
 
 ## 2026-11-26 · M0 bootstrap
 
@@ -32,3 +32,10 @@ Status: PRE-DEVELOPMENT ONLY. Brand Docmivo; final palette warm ivory/copper/esp
 
 - Published the audited source and deployed Git commit `f3abd92` to Vercel. GitHub Actions passed for that commit. Hosted checks confirmed HTTPS health, sign-in, PDF and DOCX indexing, and a real Gemini answer whose citation and expected weekday were present.
 - The first hosted walkthrough found a UUID/text parameter conflict in Settings and usage counts. Corrected the query and added PostgreSQL and browser regressions. Reran the production build and passed 34 PostgreSQL integration tests and 13 browser scenarios. The repeat benchmark measured 9.45 ms p50 and 11.08 ms p95. Final production rollout and hosted acceptance verification follow.
+
+## 2026-11-26 · Release checkpoint after interrupted session
+
+- Recovered the pending AI patch over deployed checkpoint `85868f2`. The previous hosted run verified live Q&A, summaries, comparison, and Settings. The extraction request reached the 20-second provider deadline.
+- Reduced the extraction context to three relevant sections of the built-in guides and used short request-local source IDs. The provider has one bounded 30-second attempt. Every displayed extraction value must occur in an exact quotation that resolves to a stored passage.
+- Added 20 PostgreSQL-backed scenarios with a mocked Gemini SDK covering extraction, source tampering and prompt-injection isolation, verified quotes, cross-tenant access, timeouts, provider quota errors, idempotency and concurrency. The integration run passed all 54 cases. Registry audit reported zero vulnerabilities.
+- Passed lint, TypeScript checks, the production build, all 99 unit cases and all 13 production-build Edge browser scenarios. The final local benchmark ran 50 authenticated warm keyword searches across 5,200 synthetic passages and measured 9.91 ms p50 and 11.78 ms p95. Live release acceptance is next.
