@@ -1,0 +1,2 @@
+# Initial limitations
+Specification kit only: no application, migrations, live credentials, tests or deployment yet. Brand screening preliminary, no trademark clearance. Private search required without external AI. Free-tier genuine AI limited to non-sensitive eligible sources and consent; no confidential inference. OCR, vector search and private AI are conditional, not guaranteed. Hosting limits and dependencies must be verified at implementation. No enterprise compliance or commercial readiness claims.

@@ -1,0 +1,2 @@
+# Directory plan
+Root docs and instructions stay intact. Codex initializes app in root without overwriting docs. src/app/(marketing), (auth), (workspace), api; src/components/marketing, workspace, search, reader, ui; src/server/auth, db, documents, ingestion, search, ai, quotas, audit; src/lib, types; db/schema, migrations; public/brand; tests/unit, integration, e2e, fixtures; artifacts/visual-qa; .github/workflows. Adjust paths to scaffold conventions and document changes. Keep server-only modules out of client bundles. No tracked real uploads or local secrets.
